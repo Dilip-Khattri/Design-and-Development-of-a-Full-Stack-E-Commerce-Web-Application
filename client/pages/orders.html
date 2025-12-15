@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - E-Shop</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/pages/index.html" class="navbar-brand">E-Shop</a>
+      <ul class="navbar-menu">
+        <!-- Dynamic menu items will be inserted here -->
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Orders Section -->
+  <section class="container mt-3">
+    <h1 class="mb-2">My Orders</h1>
+    
+    <div id="orders-container">
+      <!-- Orders will be loaded here -->
+    </div>
+  </section>
+
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    if (!protectRoute()) {
+      // Will redirect to login
+    }
+
+    // Load orders
+    const loadOrders = async () => {
+      try {
+        const container = document.getElementById('orders-container');
+        showLoading(container);
+
+        const response = await apiRequest('/orders/myorders');
+        const orders = response.data;
+
+        if (orders.length === 0) {
+          container.innerHTML = `
+            <div class="text-center">
+              <h3>No orders yet</h3>
+              <p>Start shopping to place your first order</p>
+              <a href="/pages/products.html" class="btn btn-primary">Browse Products</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map(order => `
+          <div class="order-item">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <h3>Order #${order._id.substring(0, 8)}</h3>
+                <p style="color: #6c757d;">Placed on ${formatDate(order.createdAt)}</p>
+              </div>
+              <div>
+                <span class="btn btn-sm ${getStatusClass(order.status)}">${order.status.toUpperCase()}</span>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+              ${order.items.map(item => `
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                  <img src="${item.product?.image || '/assets/images/default-product.jpg'}" 
+                       alt="${item.name}" 
+                       style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;"
+                       onerror="this.src='/assets/images/default-product.jpg'">
+                  <div style="flex: 1;">
+                    <strong>${item.name}</strong>
+                    <p style="color: #6c757d; margin: 0;">Quantity: ${item.quantity} × ${formatCurrency(item.price)}</p>
+                  </div>
+                  <div>
+                    <strong>${formatCurrency(item.price * item.quantity)}</strong>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong>Shipping Address:</strong>
+                  <p style="margin: 0; color: #6c757d;">
+                    ${order.shippingAddress.street}, ${order.shippingAddress.city}, 
+                    ${order.shippingAddress.state} ${order.shippingAddress.zipCode}, 
+                    ${order.shippingAddress.country}
+                  </p>
+                </div>
+                <div style="text-align: right;">
+                  <p style="font-size: 1.25rem; font-weight: bold; margin: 0;">
+                    Total: ${formatCurrency(order.totalAmount)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showAlert('Failed to load orders', 'danger');
+        console.error(error);
+      }
+    };
+
+    // Get status class for styling
+    const getStatusClass = (status) => {
+      const statusClasses = {
+        pending: 'btn-warning',
+        paid: 'btn-success',
+        shipped: 'btn-primary',
+        delivered: 'btn-success',
+        cancelled: 'btn-danger'
+      };
+      return statusClasses[status] || 'btn-secondary';
+    };
+
+    // Load orders on page load
+    loadOrders();
+  </script>
+</body>
+</html>
