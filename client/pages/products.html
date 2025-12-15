@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - E-Shop</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/pages/index.html" class="navbar-brand">E-Shop</a>
+      <ul class="navbar-menu">
+        <!-- Dynamic menu items will be inserted here -->
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Products Section -->
+  <section class="container mt-3">
+    <h1 class="text-center mb-2">Our Products</h1>
+    
+    <div id="products-container" class="products-grid">
+      <!-- Products will be loaded here -->
+    </div>
+  </section>
+
+  <!-- Product Modal -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-product-name"></h2>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <img id="modal-product-image" src="" alt="" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+        <p id="modal-product-description"></p>
+        <p class="card-price" id="modal-product-price"></p>
+        <p><strong>Stock:</strong> <span id="modal-product-stock"></span></p>
+        <p><strong>Category:</strong> <span id="modal-product-category"></span></p>
+        
+        <div class="form-group">
+          <label for="quantity">Quantity:</label>
+          <input type="number" id="quantity" class="form-control" value="1" min="1">
+        </div>
+        
+        <button id="add-to-cart-btn" class="btn btn-primary btn-block">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    let products = [];
+    let selectedProduct = null;
+
+    // Load products
+    const loadProducts = async () => {
+      try {
+        const container = document.getElementById('products-container');
+        showLoading(container);
+
+        const response = await apiRequest('/products');
+        products = response.data;
+
+        if (products.length === 0) {
+          container.innerHTML = '<p class="text-center">No products available</p>';
+          return;
+        }
+
+        container.innerHTML = products.map(product => `
+          <div class="card" onclick="showProductModal('${product._id}')">
+            <img src="${product.image}" alt="${product.name}" class="card-img" onerror="this.src='/assets/images/default-product.jpg'">
+            <div class="card-body">
+              <h3 class="card-title">${product.name}</h3>
+              <p class="card-text">${product.description.substring(0, 100)}...</p>
+              <p class="card-price">${formatCurrency(product.price)}</p>
+              <button class="btn btn-primary btn-block" onclick="event.stopPropagation(); showProductModal('${product._id}')">View Details</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showAlert('Failed to load products', 'danger');
+        console.error(error);
+      }
+    };
+
+    // Show product modal
+    const showProductModal = (productId) => {
+      selectedProduct = products.find(p => p._id === productId);
+      if (!selectedProduct) return;
+
+      document.getElementById('modal-product-name').textContent = selectedProduct.name;
+      document.getElementById('modal-product-image').src = selectedProduct.image;
+      document.getElementById('modal-product-description').textContent = selectedProduct.description;
+      document.getElementById('modal-product-price').textContent = formatCurrency(selectedProduct.price);
+      document.getElementById('modal-product-stock').textContent = selectedProduct.stock;
+      document.getElementById('modal-product-category').textContent = selectedProduct.category;
+      document.getElementById('quantity').max = selectedProduct.stock;
+
+      document.getElementById('product-modal').classList.add('show');
+    };
+
+    // Close modal
+    document.querySelector('.modal-close').addEventListener('click', () => {
+      document.getElementById('product-modal').classList.remove('show');
+    });
+
+    // Close modal on outside click
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('product-modal');
+      if (e.target === modal) {
+        modal.classList.remove('show');
+      }
+    });
+
+    // Add to cart
+    document.getElementById('add-to-cart-btn').addEventListener('click', async () => {
+      if (!isLoggedIn()) {
+        showAlert('Please login to add items to cart', 'warning');
+        setTimeout(() => {
+          window.location.href = '/pages/login.html';
+        }, 1500);
+        return;
+      }
+
+      const quantity = parseInt(document.getElementById('quantity').value);
+
+      if (quantity > selectedProduct.stock) {
+        showAlert('Not enough stock available', 'danger');
+        return;
+      }
+
+      try {
+        await apiRequest('/cart', {
+          method: 'POST',
+          body: JSON.stringify({
+            productId: selectedProduct._id,
+            quantity
+          })
+        });
+
+        showAlert('Product added to cart!', 'success');
+        updateCartCount();
+        document.getElementById('product-modal').classList.remove('show');
+      } catch (error) {
+        showAlert(error.message || 'Failed to add to cart', 'danger');
+      }
+    });
+
+    // Load products on page load
+    loadProducts();
+  </script>
+</body>
+</html>

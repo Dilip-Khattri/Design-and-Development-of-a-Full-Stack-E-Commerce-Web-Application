@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - E-Shop</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/pages/index.html" class="navbar-brand">E-Shop</a>
+      <ul class="navbar-menu">
+        <!-- Dynamic menu items will be inserted here -->
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Signup Form -->
+  <div class="auth-container">
+    <h2>Create Account</h2>
+    
+    <form id="signup-form">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" class="form-control" minlength="6" required>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" class="form-control" minlength="6" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+    </form>
+
+    <p class="text-center mt-2">
+      Already have an account? <a href="/pages/login.html">Login here</a>
+    </p>
+  </div>
+
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match', 'danger');
+        return;
+      }
+
+      try {
+        const response = await apiRequest('/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify({ name, email, password })
+        });
+
+        if (response.success) {
+          setAuthData(response.token, response.user);
+          showAlert('Account created successfully!', 'success');
+          
+          setTimeout(() => {
+            window.location.href = '/pages/products.html';
+          }, 1000);
+        }
+      } catch (error) {
+        showAlert(error.message || 'Failed to create account', 'danger');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart - E-Shop</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="/pages/index.html" class="navbar-brand">E-Shop</a>
+      <ul class="navbar-menu">
+        <!-- Dynamic menu items will be inserted here -->
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Cart Section -->
+  <section class="container mt-3">
+    <h1 class="mb-2">Shopping Cart</h1>
+    
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+      <!-- Cart Items -->
+      <div>
+        <div id="cart-items">
+          <!-- Cart items will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Cart Summary -->
+      <div>
+        <div class="cart-summary">
+          <h2 class="mb-1">Order Summary</h2>
+          <div style="border-bottom: 1px solid #ddd; padding-bottom: 1rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Subtotal:</span>
+              <span id="subtotal">$0.00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Tax (10%):</span>
+              <span id="tax">$0.00</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: bold; margin-bottom: 1.5rem;">
+            <span>Total:</span>
+            <span id="total">$0.00</span>
+          </div>
+          <a href="/pages/checkout.html" class="btn btn-primary btn-block">Proceed to Checkout</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/assets/js/utils.js"></script>
+  <script>
+    if (!protectRoute()) {
+      // Will redirect to login
+    }
+
+    let cart = null;
+
+    // Load cart
+    const loadCart = async () => {
+      try {
+        const container = document.getElementById('cart-items');
+        showLoading(container);
+
+        const response = await apiRequest('/cart');
+        cart = response.data;
+
+        if (!cart || cart.items.length === 0) {
+          container.innerHTML = `
+            <div class="text-center">
+              <h3>Your cart is empty</h3>
+              <p>Start shopping to add items to your cart</p>
+              <a href="/pages/products.html" class="btn btn-primary">Browse Products</a>
+            </div>
+          `;
+          updateSummary();
+          return;
+        }
+
+        container.innerHTML = cart.items.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-details">
+              <img src="${item.product.image}" alt="${item.product.name}" class="cart-item-img" onerror="this.src='/assets/images/default-product.jpg'">
+              <div class="cart-item-info">
+                <h3>${item.product.name}</h3>
+                <p class="card-price">${formatCurrency(item.product.price)}</p>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
+                  <label>Quantity:</label>
+                  <input type="number" value="${item.quantity}" min="1" max="${item.product.stock}" 
+                         onchange="updateQuantity('${item.product._id}', this.value)"
+                         style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                  <button class="btn btn-danger btn-sm" onclick="removeItem('${item.product._id}')">Remove</button>
+                </div>
+              </div>
+              <div>
+                <p style="font-size: 1.25rem; font-weight: bold;">${formatCurrency(item.product.price * item.quantity)}</p>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        updateSummary();
+      } catch (error) {
+        showAlert('Failed to load cart', 'danger');
+        console.error(error);
+      }
+    };
+
+    // Update quantity
+    const updateQuantity = async (productId, quantity) => {
+      try {
+        quantity = parseInt(quantity);
+        if (quantity < 1) return;
+
+        await apiRequest(`/cart/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ quantity })
+        });
+
+        showAlert('Cart updated', 'success');
+        loadCart();
+        updateCartCount();
+      } catch (error) {
+        showAlert(error.message || 'Failed to update cart', 'danger');
+        loadCart();
+      }
+    };
+
+    // Remove item
+    const removeItem = async (productId) => {
+      if (!confirm('Remove this item from cart?')) return;
+
+      try {
+        await apiRequest(`/cart/${productId}`, {
+          method: 'DELETE'
+        });
+
+        showAlert('Item removed from cart', 'success');
+        loadCart();
+        updateCartCount();
+      } catch (error) {
+        showAlert(error.message || 'Failed to remove item', 'danger');
+      }
+    };
+
+    // Update summary
+    const updateSummary = () => {
+      let subtotal = 0;
+
+      if (cart && cart.items.length > 0) {
+        subtotal = cart.items.reduce((total, item) => {
+          return total + (item.product.price * item.quantity);
+        }, 0);
+      }
+
+      const tax = subtotal * 0.1;
+      const total = subtotal + tax;
+
+      document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+      document.getElementById('tax').textContent = formatCurrency(tax);
+      document.getElementById('total').textContent = formatCurrency(total);
+    };
+
+    // Load cart on page load
+    loadCart();
+  </script>
+</body>
+</html>
