@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- Admin: admin@example.com / admin123
 -- User: user@example.com / user123
 INSERT INTO users (name, email, password, role) VALUES
-('Admin User', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('John Doe', 'user@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
+('Admin User', 'admin@example.com', '$2y$10$oBN4480W2TJ9.oTJWKOrPO8fm5gTdH2sBsCDKrILnHCLAdrgzn6lS', 'admin'),
+('John Doe', 'user@example.com', '$2y$10$m6G1VePp15ifZ./4j.6Y5ue3G9TILT5EP1z86Jm8fc1TRrPIGF86C', 'user');
 
 -- Seed data for categories
 INSERT INTO categories (name, slug) VALUES
