@@ -1,0 +1,2 @@
+# Design-and-Development-of-a-Full-Stack-E-Commerce-Web-Application
+This project develops a full-stack e-commerce web application that allows users to browse products, manage a shopping cart, and place orders securely. It includes user authentication, product and order management, and an admin panel. The system follows an MVP approach using modern web technologies with a clean and scalable architecture.
