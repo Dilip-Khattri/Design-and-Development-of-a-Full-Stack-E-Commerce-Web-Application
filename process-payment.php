@@ -35,17 +35,17 @@ try {
     }
     
     // Validate stock and calculate total
-    $total = 0;
+    $subtotal = 0;
     foreach ($cart_items as $item) {
         if ($item['quantity'] > $item['stock']) {
             throw new Exception($item['name'] . ' is out of stock');
         }
-        $total += $item['price'] * $item['quantity'];
+        $subtotal += $item['price'] * $item['quantity'];
     }
     
-    // Add shipping
-    $shipping = $total > 50 ? 0 : 10;
-    $total += $shipping;
+    // Calculate totals with tax and delivery using dynamic settings
+    $order_totals = calculate_order_total($pdo, $subtotal);
+    $total = $order_totals['total'];
     
     // Get form data
     $address = sanitize($_POST['address']);

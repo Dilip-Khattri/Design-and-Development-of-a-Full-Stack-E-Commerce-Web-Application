@@ -8,6 +8,10 @@ $cart_count = 0;
 if (is_logged_in()) {
     $cart_count = get_cart_count($pdo, $_SESSION['user_id']);
 }
+
+// Get dynamic site settings
+$site_name = get_setting($pdo, 'site_name', SITE_NAME);
+$site_logo = get_setting($pdo, 'site_logo', '');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,13 +19,19 @@ if (is_logged_in()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo csrf_token(); ?>">
-    <title><?php echo isset($page_title) ? $page_title . ' - ' : ''; ?><?php echo SITE_NAME; ?></title>
+    <title><?php echo isset($page_title) ? $page_title . ' - ' : ''; ?><?php echo htmlspecialchars($site_name); ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <header>
         <div class="container">
-            <a href="index.php" class="logo"><?php echo SITE_NAME; ?></a>
+            <a href="index.php" class="logo">
+                <?php if ($site_logo): ?>
+                    <img src="uploads/<?php echo htmlspecialchars($site_logo); ?>" alt="<?php echo htmlspecialchars($site_name); ?>" style="height: 40px; vertical-align: middle;">
+                <?php else: ?>
+                    <?php echo htmlspecialchars($site_name); ?>
+                <?php endif; ?>
+            </a>
             <nav>
                 <ul>
                     <li><a href="index.php">Home</a></li>

@@ -22,9 +22,10 @@ include 'includes/header.php';
 ?>
 
 <!-- Hero Section -->
+<!-- Hero Section -->
 <div class="hero">
     <div class="container">
-        <h1>Welcome to <?php echo SITE_NAME; ?></h1>
+        <h1>Welcome to <?php echo htmlspecialchars(get_setting($pdo, 'site_name', SITE_NAME)); ?></h1>
         <p>Discover amazing products at great prices</p>
         <a href="products.php" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">Shop Now</a>
     </div>

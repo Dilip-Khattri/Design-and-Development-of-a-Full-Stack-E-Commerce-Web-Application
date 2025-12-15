@@ -75,6 +75,14 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+-- Site Settings table
+CREATE TABLE IF NOT EXISTS site_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    setting_key VARCHAR(50) UNIQUE NOT NULL,
+    setting_value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Seed data for users
 -- Admin: admin@example.com / admin123
 -- User: user@example.com / user123
@@ -107,3 +115,14 @@ INSERT INTO products (name, slug, description, price, stock, image, category_id,
 ('Tennis Racket', 'tennis-racket', 'Professional-grade tennis racket with carbon fiber frame.', 149.99, 20, 'racket.jpg', 5, TRUE),
 ('Building Blocks Set', 'building-blocks-set', 'Creative building blocks set with 500 pieces. Great for children 5 and up.', 44.99, 55, 'blocks.jpg', 6, FALSE),
 ('Remote Control Car', 'remote-control-car', 'High-speed remote control car with rechargeable battery. Fun for all ages.', 69.99, 40, 'rccar.jpg', 6, FALSE);
+
+-- Seed data for site settings
+INSERT INTO site_settings (setting_key, setting_value) VALUES
+('site_name', 'E-Commerce Store'),
+('site_logo', ''),
+('tax_rate', '10'),
+('delivery_fee', '10'),
+('free_shipping_threshold', '50'),
+('payment_gateway', 'dummy'),
+('payment_gateway_key', ''),
+('payment_gateway_secret', '');

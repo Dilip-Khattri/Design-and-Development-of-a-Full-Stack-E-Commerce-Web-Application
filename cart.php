@@ -24,8 +24,11 @@ foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
 }
 
-$shipping = $subtotal > 50 ? 0 : 10; // Free shipping over $50
-$total = $subtotal + $shipping;
+// Calculate totals with tax and delivery using dynamic settings
+$order_totals = calculate_order_total($pdo, $subtotal);
+$tax = $order_totals['tax'];
+$shipping = $order_totals['shipping'];
+$total = $order_totals['total'];
 
 include 'includes/header.php';
 ?>
@@ -99,6 +102,13 @@ include 'includes/header.php';
                 <span><?php echo format_price($subtotal); ?></span>
             </div>
             
+            <?php if ($tax > 0): ?>
+            <div class="summary-row">
+                <span>Tax (<?php echo $order_totals['tax_rate']; ?>%):</span>
+                <span><?php echo format_price($tax); ?></span>
+            </div>
+            <?php endif; ?>
+            
             <div class="summary-row">
                 <span>Shipping:</span>
                 <span><?php echo $shipping > 0 ? format_price($shipping) : 'FREE'; ?></span>
@@ -106,7 +116,7 @@ include 'includes/header.php';
             
             <?php if ($shipping > 0): ?>
                 <p style="font-size: 0.9rem; color: #666; margin: 0.5rem 0;">
-                    Add <?php echo format_price(50 - $subtotal); ?> more for free shipping
+                    Add <?php echo format_price(get_setting($pdo, 'free_shipping_threshold', '50') - $subtotal); ?> more for free shipping
                 </p>
             <?php endif; ?>
             

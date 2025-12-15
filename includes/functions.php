@@ -209,4 +209,90 @@ function get_status_badge($status) {
     ];
     return $badges[$status] ?? 'secondary';
 }
+
+/**
+ * Get site setting value
+ */
+function get_setting($pdo, $key, $default = '') {
+    static $settings_cache = [];
+    
+    // Check cache first
+    if (isset($settings_cache[$key])) {
+        return $settings_cache[$key];
+    }
+    
+    try {
+        $stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        $result = $stmt->fetch();
+        
+        $value = $result ? $result['setting_value'] : $default;
+        $settings_cache[$key] = $value;
+        return $value;
+    } catch (PDOException $e) {
+        return $default;
+    }
+}
+
+/**
+ * Update site setting
+ */
+function update_setting($pdo, $key, $value) {
+    try {
+        // Check if setting exists
+        $stmt = $pdo->prepare("SELECT id FROM site_settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        
+        if ($stmt->fetch()) {
+            // Update existing
+            $stmt = $pdo->prepare("UPDATE site_settings SET setting_value = ? WHERE setting_key = ?");
+            $stmt->execute([$value, $key]);
+        } else {
+            // Insert new
+            $stmt = $pdo->prepare("INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)");
+            $stmt->execute([$key, $value]);
+        }
+        
+        return true;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
+/**
+ * Get all settings as associative array
+ */
+function get_all_settings($pdo) {
+    try {
+        $stmt = $pdo->query("SELECT setting_key, setting_value FROM site_settings");
+        $settings = [];
+        while ($row = $stmt->fetch()) {
+            $settings[$row['setting_key']] = $row['setting_value'];
+        }
+        return $settings;
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+/**
+ * Calculate order total with tax and delivery
+ */
+function calculate_order_total($pdo, $subtotal) {
+    $tax_rate = floatval(get_setting($pdo, 'tax_rate', '0'));
+    $delivery_fee = floatval(get_setting($pdo, 'delivery_fee', '0'));
+    $free_shipping_threshold = floatval(get_setting($pdo, 'free_shipping_threshold', '50'));
+    
+    $tax = ($subtotal * $tax_rate) / 100;
+    $shipping = $subtotal >= $free_shipping_threshold ? 0 : $delivery_fee;
+    
+    return [
+        'subtotal' => $subtotal,
+        'tax' => $tax,
+        'tax_rate' => $tax_rate,
+        'shipping' => $shipping,
+        'total' => $subtotal + $tax + $shipping
+    ];
+}
 ?>
+

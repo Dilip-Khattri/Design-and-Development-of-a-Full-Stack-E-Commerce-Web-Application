@@ -56,8 +56,10 @@ foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
 }
 
-$shipping = $subtotal > 50 ? 0 : 10;
-$total = $subtotal + $shipping;
+// Calculate totals with tax and delivery using dynamic settings
+$order_totals = calculate_order_total($pdo, $subtotal);
+$total = $order_totals['total'];
+
 
 include 'includes/header.php';
 ?>
