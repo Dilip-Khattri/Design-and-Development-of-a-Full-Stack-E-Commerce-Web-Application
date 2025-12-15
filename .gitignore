@@ -1,0 +1,22 @@
+# Uploaded files
+uploads/products/*
+!uploads/products/.gitkeep
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Environment files
+.env
+config.local.php
