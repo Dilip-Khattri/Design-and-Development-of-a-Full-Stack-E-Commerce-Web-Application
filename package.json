@@ -6,22 +6,30 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "seed": "node server/seed.js"
+    "seed": "node server/seed.js",
+    "check": "node preflight-check.js"
   },
-  "keywords": ["ecommerce", "express", "mongodb", "jwt", "rest-api"],
+  "keywords": [
+    "ecommerce",
+    "express",
+    "mongodb",
+    "jwt",
+    "rest-api"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.6.3",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "dotenv": "^16.3.1",
     "cors": "^2.8.5",
-    "multer": "^1.4.5-lts.1",
-    "express-validator": "^7.0.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.6.3",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
+    "mongodb-memory-server": "^10.4.1",
     "nodemon": "^3.0.1"
   }
 }
